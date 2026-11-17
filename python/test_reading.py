@@ -390,10 +390,14 @@ def test_bundle_drafter_cuts_fields_that_look_ahead(tmp_path):
 
 
 def test_suggest_lists_named_and_keyword_cards_not_linked(tmp_path):
-    bundle_book(tmp_path, notes='# Notes\n\n- Dell rows the inspector over; the keeper writes in his ledger.\n')
+    bundle_book(tmp_path, notes='# Notes\n\n- Dell rows the inspector over; the keeper writes in his ledger, his logbook.\n'
+                                '- A storm on the reef.\n')
+    write(tmp_path, {'world/things/the-log.md': card('The Log', 'the keeper\'s book', 'ledger, logbook'),
+                     'world/things/the-gale.md': card('The Gale', 'a storm', 'storm')})
     code, out = run('reading', '00500', '--suggest', cwd=tmp_path)
     assert code == 0 and out.startswith('# Includes to consider for 00500')
     assert '[Dell Harker](' in out and 'named' in out          # a person named by first name
-    assert '[The Log](' in out and 'keywords: ledger' in out   # a keyword match
+    assert '[The Log](' in out and 'keywords: ledger, logbook' in out   # two keywords match
+    assert '[The Gale](' not in out                                    # one keyword alone is a search word, not a mention
     assert '[Selkie](' not in out                              # linked already: not a suggestion
     assert '[Mary Quill](' not in out
