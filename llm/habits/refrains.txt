@@ -1,0 +1,4 @@
+# Watch list for the habits test, invented for this section (the book keeps none yet): label<TAB>regex
+thumb on skirt	thumb (on|onto) (my|her) skirt
+apron	wiped (her|my) hands on (her|my) apron
+and forty	\band forty\b

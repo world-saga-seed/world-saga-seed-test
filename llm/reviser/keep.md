@@ -1,0 +1,8 @@
+# Keep list, 00400 (test copy)
+
+*Lines the reviser must leave exactly as they are: the clues from the chapter's notes and the keeper's habit from her card.*
+
+- quote: High water, nine and twelve. And forty.
+- quote: She wiped her hands on her apron, though she had not touched anything.
+- quote: The weed on the third post was still wet a hand's width above the mud
+- quote: By the almanac, low water had been an hour ago.
