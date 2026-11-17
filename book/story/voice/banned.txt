@@ -1,0 +1,17 @@
+# Words Wren's narration never uses. One per line; "re:" starts a regular expression.
+# Modern words
+okay
+teenager
+stressed
+focus
+process
+deal with
+# Stock phrases a model reaches for
+I realized
+something shifted
+a breath I did not know
+couldn't help but
+re:\bnot [a-z]+ but [a-z]+\b
+# Explaining the tide (the page never says why)
+sandbar
+tidal lag
