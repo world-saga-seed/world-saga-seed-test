@@ -401,3 +401,35 @@ def test_suggest_lists_named_and_keyword_cards_not_linked(tmp_path):
     assert '[The Gale](' not in out                                    # one keyword alone is a search word, not a mention
     assert '[Selkie](' not in out                              # linked already: not a suggestion
     assert '[Mary Quill](' not in out
+
+
+def test_bundle_an_include_names_a_sheets_fields_or_cites_it(tmp_path):
+    bundle_book(tmp_path, notes=('# Notes\n\n## Cards\n\n- [Wren](characters/wren.md): Who, Habits\n'
+                                 '- [Tom](characters/tom.md): cited\n'))
+    write(tmp_path, {
+        'story/notes/characters/wren.md': ('# Wren Ashby: the narrator\n\n*S.*\n\nKeywords: keeper\n\n'
+                                           '- **Who.** The lamp keeper\'s girl.\n- **Size.** Small for thirteen.\n'
+                                           '- **Backstory.** Born on the rock.\n\n## Habits\n\n- Counts steps.\n'),
+        'story/outline/00500-the-inspector.md': '# 00500\n\n- Wren and Tom wait at the light.\n'})
+    code, out = run('reading', '00500', '--step', 'drafter', '--bundle', '--manifest', 'man.tsv', cwd=tmp_path)
+    wren = out.split('### Wren', 1)[1].split('\n### ', 1)[0]
+    assert "lamp keeper's girl" in wren and 'Counts steps' in wren   # the field, and Habits as a section
+    assert 'Small for thirteen' not in wren and 'Born on the rock' not in wren
+    assert '### Tom' not in out
+    assert 'story/notes/characters/tom.md\tcited: not given' in (tmp_path / 'man.tsv').read_text()
+
+
+def test_bundle_an_include_keeps_a_label_with_a_comma_whole(tmp_path):
+    bundle_book(tmp_path, notes='# Notes\n\n## Cards\n\n- [Selkie](../../world/beast/selkie.md): Seen at dusk, never at noon\n')
+    write(tmp_path, {'world/beast/selkie.md': FIELDED.replace('- **Size.**', '- **Seen at dusk, never at noon.** Shy.\n- **Size.**')})
+    code, out = run('reading', '00500', '--step', 'drafter', '--bundle', cwd=tmp_path)
+    sel = out.split('### Selkie', 1)[1].split('###', 1)[0]
+    assert 'Shy.' in sel and 'Two arms long' not in sel
+
+
+def test_bundle_inline_keeps_author_side_sections_for_critics(tmp_path):
+    bundle_book(tmp_path, notes='# Notes\n\n## For drafting\n\n- Dell rows over.\n\n## Author-side\n\n- Dell is the heir.\n')
+    code, out = run('reading', '00500', '--step', 'drafter', '--bundle', '--inline', cwd=tmp_path)
+    assert 'Dell rows over' in out and 'heir' not in out
+    code, out = run('reading', '00500', '--step', 'facts', '--bundle', '--inline', cwd=tmp_path)
+    assert 'heir' in out
