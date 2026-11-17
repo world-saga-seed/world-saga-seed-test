@@ -457,3 +457,10 @@ def test_bundle_an_include_reaches_a_field_past_the_first_section_and_reports_a_
     assert 'Four hands' in crew and 'Red-haired, never sings' in crew and 'Sings.' not in crew
     assert 'has no field or section "Gills"' in out                      # said, never dropped silently
     assert 'not found: Gills' in (tmp_path / 'man.tsv').read_text()
+
+
+def test_sizes_lists_a_long_field_and_marks_the_chapters_that_read_it(tmp_path):
+    write(tmp_path, {'world/item/rope.md': '# Rope: a line\n\n*A line.*\n\nKeywords: cord\n\n- **Use.** ' + 'word ' * 600 + '\n- **Look.** Brown.\n',
+                     'plan/records/drafting/00500-drafter.tsv': '# m\nworld/item/rope.md\tfields: Use\n'})
+    code, out = run('sizes', '--manifests', 'plan/records/drafting', cwd=tmp_path)
+    assert '`world/item/rope.md`, Use  (given to 00500)' in out and 'Look' not in out
