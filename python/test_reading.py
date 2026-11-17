@@ -433,3 +433,27 @@ def test_bundle_inline_keeps_author_side_sections_for_critics(tmp_path):
     assert 'Dell rows over' in out and 'heir' not in out
     code, out = run('reading', '00500', '--step', 'facts', '--bundle', '--inline', cwd=tmp_path)
     assert 'heir' in out
+
+
+def test_bundle_an_include_names_a_section_by_its_heading(tmp_path):
+    bundle_book(tmp_path, notes='# Notes\n\n## Cards\n\n- [The Prices](../../world/things/prices.md): Fish\n')
+    write(tmp_path, {'world/things/prices.md': ('# The Prices: what things cost\n\n*S.*\n\nKeywords: price\n\n'
+                                                '## Oil\n\n- **Colza.** Dear.\n\n## Fish\n\n- **Herring.** Cheap by the cran.\n'
+                                                '- **Cod.** Dear in winter.\n\n## Rope\n\n- **Hemp.** By the fathom.\n')})
+    code, out = run('reading', '00500', '--step', 'drafter', '--bundle', cwd=tmp_path)
+    block = out.split('### The Prices', 1)[1].split('\n### ', 1)[0]
+    assert 'Cheap by the cran' in block and 'Dear in winter' in block
+    assert 'Colza' not in block and 'Hemp' not in block
+
+
+def test_bundle_an_include_reaches_a_field_past_the_first_section_and_reports_a_missing_one(tmp_path):
+    bundle_book(tmp_path, notes='# Notes\n\n## Cards\n\n- [Crew](characters/crew.md): Who, Ned, the bow oar, Gills\n')
+    write(tmp_path, {'story/notes/characters/crew.md': ('# The crew: the boat\'s hands\n\n*S.*\n\nKeywords: crew\n\n'
+                                                       '## The hands\n\n- **Who.** Four hands.\n\n## The four\n\n'
+                                                       '- **Ned, the bow oar.** Red-haired, never sings.\n- **Sam.** Sings.\n'),
+                     'story/outline/00500-the-inspector.md': '# 00500\n\n- The [crew](../../story/notes/characters/crew.md) rows.\n'})
+    code, out = run('reading', '00500', '--step', 'drafter', '--bundle', '--manifest', 'man.tsv', cwd=tmp_path)
+    crew = out.split('### The crew', 1)[1].split('\n### ', 1)[0]
+    assert 'Four hands' in crew and 'Red-haired, never sings' in crew and 'Sings.' not in crew
+    assert 'has no field or section "Gills"' in out                      # said, never dropped silently
+    assert 'not found: Gills' in (tmp_path / 'man.tsv').read_text()
